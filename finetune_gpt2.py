@@ -27,7 +27,7 @@ class MyDataset(Dataset):
 def setup_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_path', default="gpt2通用中文模型", type=str, help='')
-    parser.add_argument('--vocab_path', default="vocab.txt", type=str, help='')
+    parser.add_argument('--vocab_path', default="gpt2通用中文模型/vocab.txt", type=str, help='')
     parser.add_argument('--save_model_path', default="save_model", type=str, help='')
     parser.add_argument('--final_model_path', default="final_model", type=str, help='')
     parser.add_argument('--train_raw_path', default='train_raw_data.txt', type=str, help='')
@@ -98,7 +98,6 @@ def collate_fn(batch):
 
 def data_loader(args, train_data_path, tokenizer, shuffle):
     data_list = []
-    cnt = 0
     with open(train_data_path, 'rb') as f:
         data = f.read().decode("utf-8")
         train_data = data.split("\n")
@@ -112,9 +111,6 @@ def data_loader(args, train_data_path, tokenizer, shuffle):
             wenan_ids = tokenizer.encode(wenan)
             inputs_ids = title_ids + wenan_ids[1:]
             data_list.append(inputs_ids)
-            cnt += 1
-            if cnt == 100:
-                break
     dataset = MyDataset(data_list)
     dataloader = DataLoader(dataset=dataset,
                             batch_size=args.batch_size,
