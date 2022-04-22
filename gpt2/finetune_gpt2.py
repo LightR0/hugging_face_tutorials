@@ -163,6 +163,8 @@ def train(args, model, dataloader):
 def evaluate(dataloader, args):
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model, _ = load_model(args.save_model_path, args.vocab_path)
+    model.to(device)
+    model.eval()
     loss_list, acc_list, rouge_1_list, rouge_2_list, rouge_l_list = [], [], [], [], []
     batch_steps = 0
     for batch in dataloader:
@@ -187,6 +189,12 @@ def evaluate(dataloader, args):
           "rouge-1: {},".format(np.mean(rouge_1_list)),
           "rouge-2: {},".format(np.mean(rouge_2_list)),
           "rouge-l: {}".format(np.mean(rouge_l_list)))
+    
+    
+def get_parameter_number(model):
+    total_num = sum(p.numel() for p in model.parameters())
+    trainable_num = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    return {'Total': total_num, 'Trainable': trainable_num}
 
 
 if __name__ == '__main__':
@@ -196,3 +204,5 @@ if __name__ == '__main__':
     eval_dataloader = data_loader(args, args.eval_raw_path, tokenizer=tokenizer, shuffle=False)
     train(args, model, train_dataloader)
     evaluate(eval_dataloader, args=args)
+
+    
