@@ -167,23 +167,24 @@ def evaluate(dataloader, args):
     model.eval()
     loss_list, acc_list, rouge_1_list, rouge_2_list, rouge_l_list = [], [], [], [], []
     batch_steps = 0
-    for batch in dataloader:
-        batch_steps += 1
-        inputs = {"input_ids": batch.to(device)}
-        outputs = model(**inputs, labels=batch.to(device))
-        loss, acc, rouge_score = calculate_loss_and_accuracy(outputs, batch.to(device), device)
-        loss_list.append(float(loss))
-        acc_list.append(float(acc))
-        rouge_1_list.append(float(rouge_score["rouge-1"]['f']))
-        rouge_2_list.append(float(rouge_score["rouge-2"]['f']))
-        rouge_l_list.append(float(rouge_score["rouge-l"]['f']))
-        print("eval batch {}/{}, loss {}, accuracy {}, rouge-1 {}, rouge-2 {}, rouge-l {}".format(
-            batch_steps,
-            len(dataloader),
-            loss, acc,
-            rouge_score["rouge-1"]['f'],
-            rouge_score["rouge-2"]["f"],
-            rouge_score["rouge-l"]["f"]))
+    with torch.no_grad():
+        for batch in dataloader:
+            batch_steps += 1
+            inputs = {"input_ids": batch.to(device)}
+            outputs = model(**inputs, labels=batch.to(device))
+            loss, acc, rouge_score = calculate_loss_and_accuracy(outputs, batch.to(device), device)
+            loss_list.append(float(loss))
+            acc_list.append(float(acc))
+            rouge_1_list.append(float(rouge_score["rouge-1"]['f']))
+            rouge_2_list.append(float(rouge_score["rouge-2"]['f']))
+            rouge_l_list.append(float(rouge_score["rouge-l"]['f']))
+            print("eval batch {}/{}, loss {}, accuracy {}, rouge-1 {}, rouge-2 {}, rouge-l {}".format(
+                batch_steps,
+                len(dataloader),
+                loss, acc,
+                rouge_score["rouge-1"]['f'],
+                rouge_score["rouge-2"]["f"],
+                rouge_score["rouge-l"]["f"]))
     print("loss: {},".format(np.mean(loss_list)),
           "accuracy: {}.".format(np.mean(acc_list)),
           "rouge-1: {},".format(np.mean(rouge_1_list)),
