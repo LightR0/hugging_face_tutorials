@@ -1,4 +1,5 @@
 import os
+import time
 import torch
 import argparse
 import numpy as np
@@ -190,6 +191,33 @@ def evaluate(dataloader, args):
           "rouge-1: {},".format(np.mean(rouge_1_list)),
           "rouge-2: {},".format(np.mean(rouge_2_list)),
           "rouge-l: {}".format(np.mean(rouge_l_list)))
+    
+
+
+def predict(args, text="美丽时分雪绒花美白面膜美白提亮，均匀肤色贴片面膜"):
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    model, _ = load_model(args.save_model_path, args.vocab_path)
+    model.to(device)
+    model.eval()
+    time1 = time.time()
+    max_length = 30
+    input_ids = []
+    input_ids.extend(tokenizer.encode(text))
+    wenan = ""
+    for i in range(max_length):
+        input_tensor = torch.tensor([input_ids])
+        inputs = {"input_ids": input_tensor.to(device)}
+        outputs = model(**inputs)
+        logits = outputs.logits
+        last_token_id = int(np.argmax(logits[0][-1].detach().to('cpu').numpy()))
+        if last_token_id == tokenizer.sep_token_id:
+            break
+        last_token = tokenizer.convert_ids_to_tokens(last_token_id)
+        input_ids.append(last_token_id)
+        wenan += last_token
+    print("time cost: {}".format(time.time()-time1))
+    print(text)
+    print(wenan)
     
     
 def get_parameter_number(model):
